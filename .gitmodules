@@ -1,0 +1,6 @@
+[submodule "libraries/API"]
+	path = libraries/API
+	url = https://github.com/tinyusbboard/API
+[submodule "libraries/avrlibs-baerwolf"]
+	path = libraries/avrlibs-baerwolf
+	url = https://github.com/baerwolf/avrlibs-baerwolf
