@@ -21,21 +21,11 @@
 
 
 void init_cpu(void) {
-  uint16_t clockcalibration;
-
   cli();
   bootupreason=MCUBOOTREASONREG;
   MCUBOOTREASONREG=0;
   wdt_disable();
 
-#	if ((F_CPU) <= 8000000ULL)
-  /* check if last word of eeprom contains clock calibration data */
-  clockcalibration=eeprom_read_word((void*)((E2END)-1));
-  if (clockcalibration != 0xffff) {
-    /* calibrate the counter */
-    OSCCAL=clockcalibration & 0xff;
-  }
-#	endif
 }
 
 int main(void) {
