@@ -1,5 +1,5 @@
 /*
- * main.h
+ * pwm.h
  */
 #ifndef __PWM_H_372746308b4011eaab120800200c9a66
 #define __PWM_H_372746308b4011eaab120800200c9a66	1
