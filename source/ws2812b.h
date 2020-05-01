@@ -112,4 +112,10 @@ WS2812BPUBLIC EXTFUNC_head(int8_t, ws2812b_txbuffer, const void* buffer, size_t 
 #   endif
 #endif
 
+#ifndef UCPHA0
+#   ifdef UCSZ00
+#       define UCPHA0   UCSZ00
+#   endif
+#endif
+
 #endif
