@@ -22,7 +22,7 @@
  register uint8_t __register4 asm ("r4");
  register uint8_t __register5 asm ("r5");
  register uint8_t __register6 asm ("r6");
- register uint8_t __register6 asm ("r7");
+ register uint8_t __register7 asm ("r7");
  
  /* inform cpucontext library NOT to switch it between contexts */
 #   define CONFIG_CPUCONTEXT_NO_R2
