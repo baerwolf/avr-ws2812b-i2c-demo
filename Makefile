@@ -108,6 +108,12 @@ build/hwclock.o: build/hwclock.S $(STDDEP) $(EXTRADEP)
 
 
 
+build/ws2812b.S: source/ws2812b.c $(STDDEP) $(EXTRADEP)
+	$(CC) source/ws2812b.c -S -o build/ws2812b.S $(MYCFLAGS)
+
+build/ws2812b.o: build/ws2812b.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/ws2812b.S -c -o build/ws2812b.o $(MYCFLAGS)
+
 build/pwm.S: source/pwm.c $(STDDEP) $(EXTRADEP)
 	$(CC) source/pwm.c -S -o build/pwm.S $(MYCFLAGS)
 
@@ -124,7 +130,7 @@ build/main.o: build/main.S $(STDDEP) $(EXTRADEP)
 
 
 
-MYOBJECTS = build/main.o build/pwm.o build/extfunc.o build/cpucontext.o build/hwclock.o
+MYOBJECTS = build/main.o build/pwm.o build/ws2812b.o build/extfunc.o build/cpucontext.o build/hwclock.o
 release/main.elf: $(MYOBJECTS) $(STDDEP) $(EXTRADEP)
 	$(CC) $(MYOBJECTS) -o release/main.elf $(MYCFLAGS) -Wl,-Map,release/main.map $(MYLDFLAGS)
 	$(ECHO) "."
