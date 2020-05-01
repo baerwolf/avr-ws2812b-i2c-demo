@@ -107,6 +107,12 @@ build/hwclock.o: build/hwclock.S $(STDDEP) $(EXTRADEP)
 
 
 
+build/pwm.S: source/pwm.c $(STDDEP) $(EXTRADEP)
+	$(CC) source/pwm.c -S -o build/pwm.S $(MYCFLAGS)
+
+build/pwm.o: build/pwm.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/pwm.S -c -o build/pwm.o $(MYCFLAGS)
+
 build/main.S: source/main.c $(STDDEP) $(EXTRADEP)
 	$(CC) source/main.c -S -o build/main.S $(MYCFLAGS)
 
@@ -117,7 +123,7 @@ build/main.o: build/main.S $(STDDEP) $(EXTRADEP)
 
 
 
-MYOBJECTS = build/main.o build/extfunc.o build/cpucontext.o build/hwclock.o
+MYOBJECTS = build/main.o build/pwm.o build/extfunc.o build/cpucontext.o build/hwclock.o
 release/main.elf: $(MYOBJECTS) $(STDDEP) $(EXTRADEP)
 	$(CC) $(MYOBJECTS) -o release/main.elf $(MYCFLAGS) -Wl,-Map,release/main.map $(MYLDFLAGS)
 	$(ECHO) "."
