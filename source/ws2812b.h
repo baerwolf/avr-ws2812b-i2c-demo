@@ -26,6 +26,11 @@
  * Taking the cycles burned for interrupt entering into account, this code should
  * do it in about 46cycles - leaving the rest for the cpu to do other things...
  * 
+ * Color value 0xff is an ESC sequence to send only SPI-zeros.
+ * Because in USART SPI TX pin is high by default, we need 50us (min) low to reset
+ * This is achieved by sending 16byte of 0xff (16byte * 8bit * 0.4us --> 51.2us)
+ * 
+ * 
  * info
  * ^^^^
  * This could could support (8bit or 12bit) color paletts in order to save pixel buffer.
@@ -48,7 +53,63 @@
 #	define	WS2812BPUBLIC		extern
 #endif
 
+
+#   ifndef WS2812B_TXPin
+#       define WS2812B_TXPin   D,1
+#   endif
+
+#if (defined (__AVR_ATmega88__)  || defined (__AVR_ATmega88P__)  || defined (__AVR_ATmega88A__)  || defined (__AVR_ATmega88PA__)  || \
+     defined (__AVR_ATmega168__) || defined (__AVR_ATmega168P__) || defined (__AVR_ATmega168A__) || defined (__AVR_ATmega168PA__) || \
+     defined (__AVR_ATmega328__) || defined (__AVR_ATmega328P__) || defined (__AVR_ATmega328A__) || defined (__AVR_ATmega328PA__) || \
+  0)
+
+#   ifndef WS2812B_CLKPin
+#       define WS2812B_CLKPin   D,4
+#   endif
+
+#   ifndef WS2812B_REFILLISR_vect
+#       define WS2812B_REFILLISR_vect   USART_UDRE_vect
+#   endif
+
+#   ifndef WS2812B_TXComplete_vect
+#     define WS2812B_TXComplete_vect    USART_TX_vect
+#   endif
+
+#elif(defined (__AVR_ATmega164__) || defined (__AVR_ATmega164P__) || defined (__AVR_ATmega164A__) || defined (__AVR_ATmega164PA__) || \
+      defined (__AVR_ATmega324__) || defined (__AVR_ATmega324P__) || defined (__AVR_ATmega324A__) || defined (__AVR_ATmega324PA__) || \
+      defined (__AVR_ATmega644__) || defined (__AVR_ATmega644P__) || defined (__AVR_ATmega644A__) || defined (__AVR_ATmega644PA__) || \
+      defined (__AVR_ATmega1284__)|| defined (__AVR_ATmega1284P__)||                                                                  \
+  0)
+
+#   ifndef WS2812B_CLKPin
+#       define WS2812B_CLKPin   B,0
+#   endif
+
+#   ifndef WS2812B_REFILLISR_vect
+#     define WS2812B_REFILLISR_vect     USART0_UDRE_vect
+#   endif
+
+#   ifndef WS2812B_TXComplete_vect
+#     define WS2812B_TXComplete_vect    USART0_TX_vect
+#   endif
+
+#else
+#   error unsupported AVR - unknown USART SPI master
+#endif
+
+
 WS2812BPUBLIC EXTFUNC_voidhead(int8_t, ws2812b_initialize);
 WS2812BPUBLIC EXTFUNC_voidhead(int8_t, ws2812b_finalize);
+
+#define ws2812b_inTX(x) ((__register8!=0)||(__register9!=0))
+WS2812BPUBLIC EXTFUNC_head(int8_t, ws2812b_txbuffer, const void* buffer, size_t bufferbytesize);
+
+
+/* work around some avr libc bugs */
+#ifndef UDORD0
+#   ifdef UCSZ01
+#       define UDORD0   UCSZ01
+#   endif
+#endif
 
 #endif
