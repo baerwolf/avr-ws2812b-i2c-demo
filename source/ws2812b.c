@@ -116,7 +116,7 @@ ISR(WS2812B_TXComplete_vect) {
 /* Z --> B --> X                             */
 /*       C --> Z                             */
 /* SREG->Clo                                 */
-/* r0  ->Chi                                 */
+/*       Chi as tmp                          */
 ISR(WS2812B_REFILLISR_vect, ISR_NAKED) {
     asm volatile (
         /* backup registers */
@@ -124,19 +124,17 @@ ISR(WS2812B_REFILLISR_vect, ISR_NAKED) {
         "movw	r26     ,	    r4                      \n\t" /* movw X  , B       --> 1 */
         "movw	r4      ,   	r30                     \n\t" /* movw B  , Z       --> 1 */
         "movw	r30     ,   	r6                      \n\t" /* movw Z  , C       --> 1 */
-        "mov	r7      ,   	r0                      \n\t" /* mov  Chi, r0      --> 1 */
         "in     r6      ,   	%[sreg]      	        \n\t" /* in   Clo, SREG    --> 1 */
 
         "cpi    r31     ,       hi8(%[nrziend])         \n\t" /* cpi  Zhi, const+3 --> 1 */
         "breq   __ws2812b_refillvect_nextByte%=         \n\t" /* breq @nextPixel   --> 1 */
 
         /* load next nrzi sequence to send to spi */
-        "lpm                                            \n\t" /* lpm Z             --> 3 */
-        "sts    %[spidr],       r0                      \n\t" /* sts SPIDR, r0     --> 2 */
+        "lpm    r7      ,       Z                       \n\t" /* lpm r7, Z         --> 3 */
+        "sts    %[spidr],       r7                      \n\t" /* sts SPIDR, r7     --> 2 */
         "inc    r31                                     \n\t" /* inc Zhi           --> 1 */
 "__ws2812b_refillvect_alternaterestore%=:               \n\t"
         /* restore for leaving interrupt */
-        "mov    r0      ,       r7                      \n\t" /* mov r0, Chi       --> 1 */
         "out    %[sreg] ,       r6                      \n\t" /* out SREG, Clo     --> 1 */
         "movw   r6      ,       r30                     \n\t" /* movw C, Z         --> 1 */
         "movw   r30     ,       r4                      \n\t" /* movw Z, B         --> 1 */
@@ -150,8 +148,8 @@ ISR(WS2812B_REFILLISR_vect, ISR_NAKED) {
         "ld     r30     ,       X+                      \n\t" /* ldd Zlo, X+       --> 2 */
         
         /* load next nrzi sequence to send to spi */
-        "lpm                                            \n\t" /* lpm Z             --> 3 */
-        "sts    %[spidr],       r0                      \n\t" /* sts SPIDR, r0     --> 2 */
+        "lpm    r7      ,       Z                       \n\t" /* lpm r7, Z         --> 3 */
+        "sts    %[spidr],       r7                      \n\t" /* sts SPIDR, r7     --> 2 */
         "inc    r31                                     \n\t" /* inc Zhi           --> 1 */
         /* check for eof sequence */
         "cp     r26     ,       r8                      \n\t" /* cp  Xlo, Dlo      --> 1 */
@@ -159,7 +157,6 @@ ISR(WS2812B_REFILLISR_vect, ISR_NAKED) {
         "breq   __ws2812b_refillvect_finishTX%=         \n\t" /* breq @finishTX    --> 1 */
 "__ws2812b_refillvect_finalrestore%=:                   \n\t"
         /* restore for leaving interrupt */
-        "mov    r0      ,       r7                      \n\t" /* mov r0, Chi       --> 1 */
         "out    %[sreg] ,       r6                      \n\t" /* out SREG, Clo     --> 1 */
         "movw   r6      ,       r30                     \n\t" /* movw C, Z         --> 1 */
         "movw   r30     ,       r4                      \n\t" /* movw Z, B         --> 1 */
