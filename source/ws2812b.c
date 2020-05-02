@@ -82,8 +82,10 @@ EXTFUNC_void(int8_t, ws2812b_initialize) {
 
   SET_LOW(WS2812B_TXPin);
   CFG_OUTPUT(WS2812B_TXPin);
+#ifdef WS2812B_CLKPin
   SET_LOW(WS2812B_CLKPin);
   CFG_OUTPUT(WS2812B_CLKPin);
+#endif
 
   UCSR0C = _BV(UMSEL01)|_BV(UMSEL00)|_BV(UDORD0)|_BV(UCPHA0); /* setup LSB first on leading rising edge */
   __ws2812b_initialized = UCSR0B;
