@@ -148,15 +148,15 @@ ISR(WS2812B_REFILLISR_vect, ISR_NAKED) {
 "__ws2812b_refillvect_nextByte%=:                       \n\t" /*                   --> 1 */
         "ldi    r31     ,       hi8(%[nrziptr])         \n\t" /* ldi Zhi, static   --> 1 */
         "ld     r30     ,       X+                      \n\t" /* ldd Zlo, X+       --> 2 */
-        
+        /* check for eof sequence */                    /* reordered, patch 202005021505 */
+        "cp     r26     ,       r8                      \n\t" /* cp  Xlo, Dlo      --> 1 */
+        "cpc    r27     ,       r9                      \n\t" /* cpc Xhi, Dhi      --> 1 */
+        "breq   __ws2812b_refillvect_finishTX%=         \n\t" /* breq @finishTX    --> 1 */
         /* load next nrzi sequence to send to spi */
         "lpm    r7      ,       Z                       \n\t" /* lpm r7, Z         --> 3 */
         "sts    %[spidr],       r7                      \n\t" /* sts SPIDR, r7     --> 2 */
         "inc    r31                                     \n\t" /* inc Zhi           --> 1 */
-        /* check for eof sequence */
-        "cp     r26     ,       r8                      \n\t" /* cp  Xlo, Dlo      --> 1 */
-        "cpc    r27     ,       r9                      \n\t" /* cpc Xhi, Dhi      --> 1 */
-        "breq   __ws2812b_refillvect_finishTX%=         \n\t" /* breq @finishTX    --> 1 */
+        /* Z-buffer (r31) can't overflow here, because it is always bigger than one line */
 "__ws2812b_refillvect_finalrestore%=:                   \n\t"
         /* restore for leaving interrupt */
         "out    %[sreg] ,       r6                      \n\t" /* out SREG, Clo     --> 1 */
@@ -182,18 +182,37 @@ ISR(WS2812B_REFILLISR_vect, ISR_NAKED) {
           [nrziend]	 "i"	((&__NRZIsequence[3][0])) /* fully intentionally out of bound - it signals the end of the __NRZIsequence */
     );
 }
-
+/* Patch 202005021505 *** ***************************************************
+ *
+ * Because in "WS2812B_REFILLISR_vect" the pixel-buffer eof is checked after
+ * loading the next byte from X-ptr, it never would completly traverse the
+ * "__NRZIsequence" buffer. (Mainly because the refill ISR is switched off")
+ * So the last byte never becomes transmitted completly (only the first 8
+ * NRZI SPI bits are loaded to the SPI data register).
+ *
+ * One part of the patch is to indicate an one byte longer buffer.
+ * Howerever this lead to an intentional 1byte READ OUT OF buffer BOUND.
+ * This is not seen as critical here, since there is (a) no access protection
+ * in AVRs and (b) buffer endings should never point to peripherical addresses.
+ * (Where a read could trigger some logic elsewhere...)
+ *
+ * To avoid tranmitting the first "invalid" "out-of-bound" 8-SPI bits, code
+ * within "WS2812B_REFILLISR_vect" will be reorder, so checking comes before
+ * loading TX-register...
+ ****************************************************************************/
 EXTFUNC(int8_t, ws2812b_txbuffer, const void* buffer, size_t bufferbytesize) {
     if (bufferbytesize > 0) {
         if (ws2812b_inTX()) return -1;
         asm volatile (
-        /* calculate ending pointer */
         "push   r26                                     \n\t"
         "push   r27                                     \n\t"
         "push   r30                                     \n\t"
         "push   r31                                     \n\t"
+
+        /* calculate ending pointer */
         "movw	r8      ,   	r26                     \n\t"
-        "add    r8      ,       %A[siz]                 \n\t"
+        "sec                                            \n\t" /* patch 202005021505 - see in front of this function more */
+        "adc    r8      ,       %A[siz]                 \n\t"
         "adc    r9      ,       %B[siz]                 \n\t"
 
         /* load first value */
