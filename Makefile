@@ -108,6 +108,24 @@ build/hwclock.o: build/hwclock.S $(STDDEP) $(EXTRADEP)
 
 
 
+build/protocol.S: source/protocol.c $(STDDEP) $(EXTRADEP)
+	$(CC) source/protocol.c -S -o build/protocol.S $(MYCFLAGS)
+
+build/protocol.o: build/protocol.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/protocol.S -c -o build/protocol.o $(MYCFLAGS)
+
+build/twithread.S: source/twithread.c $(STDDEP) $(EXTRADEP)
+	$(CC) source/twithread.c -S -o build/twithread.S $(MYCFLAGS)
+
+build/twithread.o: build/twithread.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/twithread.S -c -o build/twithread.o $(MYCFLAGS)
+
+build/twi.S: source/twi.c $(STDDEP) $(EXTRADEP)
+	$(CC) source/twi.c -S -o build/twi.S $(MYCFLAGS)
+
+build/twi.o: build/twi.S $(STDDEP) $(EXTRADEP)
+	$(CC) build/twi.S -c -o build/twi.o $(MYCFLAGS)
+
 build/ws2812b.S: source/ws2812b.c $(STDDEP) $(EXTRADEP)
 	$(CC) source/ws2812b.c -S -o build/ws2812b.S $(MYCFLAGS)
 
@@ -130,7 +148,7 @@ build/main.o: build/main.S $(STDDEP) $(EXTRADEP)
 
 
 
-MYOBJECTS = build/main.o build/pwm.o build/ws2812b.o build/extfunc.o build/cpucontext.o build/hwclock.o
+MYOBJECTS = build/main.o build/pwm.o build/ws2812b.o build/twi.o build/twithread.o build/protocol.o  build/extfunc.o build/cpucontext.o build/hwclock.o
 release/main.elf: $(MYOBJECTS) $(STDDEP) $(EXTRADEP)
 	$(CC) $(MYOBJECTS) -o release/main.elf $(MYCFLAGS) -Wl,-Map,release/main.map $(MYLDFLAGS)
 	$(ECHO) "."
