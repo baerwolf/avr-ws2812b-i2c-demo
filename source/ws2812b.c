@@ -179,7 +179,7 @@ ISR(WS2812B_REFILLISR_vect, ISR_NAKED) {
           [ucsrb]    "i"	(_SFR_MEM_ADDR(UCSR0B)),
           [udriemsk] "i"    ((~(_BV(UDRIE0))) & 0xff),
           [nrziptr]	 "i"	((&__NRZIsequence[0][0])),
-          [nrziend]	 "i"	((&__NRZIsequence[3][0])) /* fully intentionally out of bound - it signals the end of the __NRZIsequence */
+          [nrziend]	 "i"	((&__NRZIsequence[0][0])+sizeof(__NRZIsequence)) /* end of the __NRZIsequence */
     );
 }
 /* Patch 202005021505 *** ***************************************************
