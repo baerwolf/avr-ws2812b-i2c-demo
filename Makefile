@@ -14,6 +14,7 @@ F_CPU = 20000000
 
 # extra data section
 DEFINES += -DCPUCONTEXTINCLUDEDEFINES
+# DEFINES += -DVIDEOMODE_8BIT_PALETTE
 # DEFINES += -D__AVR_LIBC_DEPRECATED_ENABLE__
 # DEFINES += -DDATASECTION=__attribute__\ \(\(section\ \(\".extradata\"\)\)\)
 # LDFLAGS += -Wl,--section-start=.extradata=0x6000
