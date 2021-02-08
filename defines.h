@@ -15,7 +15,8 @@
 #ifdef CPUCONTEXTINCLUDEDEFINES
 #   include <stdint.h>
  /* our WS2812B timing driver needs registers r2 to r9 exclusively for its own (r8:r9 is for endptr) */
- 
+ /* for example you may do a static check for ensurance via "cat release/main.asm | egrep -in r2[^0123456789]\|r2$" */
+
  /* tell the compiler to block the registers and avoid generating code with them */
  register uint8_t __register2 asm ("r2");
  register uint8_t __register3 asm ("r3");
@@ -23,10 +24,13 @@
  register uint8_t __register5 asm ("r5");
  register uint8_t __register6 asm ("r6");
  register uint8_t __register7 asm ("r7");
- 
+
  register uint8_t __register8 asm ("r8");
  register uint8_t __register9 asm ("r9");
- 
+
+ /* IMPORTANT: Also inform older versions of hwclock to avoid "r2" */
+#define __HWCLKTMP "r10"
+
  /* inform cpucontext library NOT to switch it between contexts */
 #   define CONFIG_CPUCONTEXT_NO_R2
 #   define CONFIG_CPUCONTEXT_NO_R3
